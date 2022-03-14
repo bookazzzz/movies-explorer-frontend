@@ -1,0 +1,119 @@
+.portfolio {
+    max-width: calc(100% - 140px);
+    padding: 0 70px 125px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: #FFFFFF;
+  }
+  
+  .portfolio__title {
+    margin: 0;
+    padding-bottom: 30px;
+    font-family: Inter;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 18px;
+    line-height: 20px;
+    color: #A0A0A0;
+  }
+  
+  .portfolio__links {
+    list-style-type: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+  }
+  
+  .portfolio_item {
+    width: 100%;
+  }
+  
+  .portfolio__link {
+    text-decoration: none;
+    font-family: Inter;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 30px;
+    line-height: 50px;
+  }
+  
+  .portfolio__link:hover {
+    opacity: .8;
+  }
+  
+  .portfolio__link-button {
+    width: 100%;
+    padding: 20px 0;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    border: none;
+    border-bottom: 1px solid #E8E8E8;
+    background-color: #FFFFFF;
+    color: #000000;
+    cursor: pointer;
+  }
+  
+  .portfolio__arrow {
+    width: 29px;
+    height: 29px;
+    fill: currentColor;
+  }
+  
+  .portfolio__noborder {
+    border-bottom: none;
+  }
+  
+  @media screen and (max-width: 1023px) {
+    .portfolio {
+      max-width: 768px;
+      padding: 0 50px 90px;
+      margin: 0 auto;
+    }
+  
+    .portfolio__link-button {
+      padding-bottom: 19px;
+  
+    }
+  
+    .portfolio__link {
+      font-size: 28px;
+    }
+  
+    .portfolio__arrow {
+      width: 27px;
+      height: 60px;
+    }
+  
+  }
+  
+  @media screen and (max-width: 767px) {
+    .portfolio {
+      max-width: 320px;
+      padding: 0 14px 70px;
+    }
+  
+    .portfolio__link-button {
+      padding-bottom: 19px;
+    }
+  
+    .portfolio__link {
+      font-size: 18px;
+      line-height: 28px;
+    }
+  
+    .portfolio__arrow {
+      width: 18px;
+      height: 28px;
+    }
+  
+    .portfolio__title {
+      padding-bottom: 20px;
+      font-size: 14px;
+  
+    }
+  }
+  
