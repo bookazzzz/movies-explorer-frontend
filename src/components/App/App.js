@@ -39,8 +39,8 @@ function App() {
 
   return (
     <CurrentUserContext.Provider value={currentUser}>
-      <Switch>
-        <div className="App">
+      <div className="App">
+        <Switch>
           <Route path="/signup">
             <Register />
           </Route>
@@ -53,27 +53,30 @@ function App() {
             <Main loggedIn={loggedIn} />
           </Route>
 
-          <Route path="/profile">
-            <ProtectedRoute
-              loggedIn={loggedIn}
-              component={Profile}
-              onSignOut={signOut}
-            />
-          </Route>
+          <ProtectedRoute
+            loggedIn={loggedIn}
+            component={Profile}
+            onSignOut={signOut}
+            path="/profile"
+          />
 
-          <Route path="/movies">
-            <ProtectedRoute component={Movies} loggedIn={loggedIn} />
-          </Route>
+          <ProtectedRoute
+            component={Movies}
+            loggedIn={loggedIn}
+            path="/movies"
+          />
 
-          <Route path="/saved-movies">
-            <ProtectedRoute component={SavedMovies} loggedIn={loggedIn} />
-          </Route>
+          <ProtectedRoute
+            component={SavedMovies}
+            loggedIn={loggedIn}
+            path="/saved-movies"
+          />
 
           <Route path="*">
             <NotFound />
           </Route>
-        </div>
-      </Switch>
+        </Switch>
+      </div>
     </CurrentUserContext.Provider>
   );
 }

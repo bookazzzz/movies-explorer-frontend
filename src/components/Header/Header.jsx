@@ -7,7 +7,7 @@ import Navigation from "../Navigation/Navigation";
 import { useMediaQuery } from "react-responsive";
 
 function Header(props) {
-  const isTabletOrMobile = useMediaQuery({ query: "(max-width: 768px)" });
+  const isTabletOrMobile = useMediaQuery({ query: "(max-width: 1023px)" });
 
   return (
     <header className="header">
@@ -60,7 +60,7 @@ function Header(props) {
           {isTabletOrMobile && ( 
             <>
               <button className="header__burger-button" type="button"></button>
-              {/* <Navigation /> */}
+              <Navigation />
             </>
           )}
         </>
