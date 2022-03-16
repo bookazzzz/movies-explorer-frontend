@@ -18,7 +18,7 @@ function App() {
   });
 
   // Состояние залогиненного пользователя
-  const [loggedIn, setLoggedIn] = React.useState(true);
+  const [loggedIn, setLoggedIn] = React.useState(false);
 
   //Путь пользователя в браузере
   const history = useHistory();
@@ -41,16 +41,16 @@ function App() {
     <CurrentUserContext.Provider value={currentUser}>
       <div className="App">
         <Switch>
+        <Route exact path="/">
+            <Main loggedIn={loggedIn} />
+          </Route>
+
           <Route path="/signup">
             <Register />
           </Route>
 
           <Route path="/signin">
             <Login />
-          </Route>
-
-          <Route exact path="/">
-            <Main loggedIn={loggedIn} />
           </Route>
 
           <ProtectedRoute

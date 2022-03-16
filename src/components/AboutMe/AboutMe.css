@@ -95,7 +95,7 @@
   
   @media screen and (max-width: 1023px) {
     .about-me {
-      max-width: 768px;
+      max-width: calc(100% - 100px);
       padding: 90px 50px 91px;
       margin: 0 auto;
     }
@@ -132,7 +132,7 @@
   
   @media screen and (max-width: 767px) {
     .about-me {
-      max-width: 320px;
+      max-width: calc(100% - 28px);
       padding: 70px 14px 69px;
     }
   

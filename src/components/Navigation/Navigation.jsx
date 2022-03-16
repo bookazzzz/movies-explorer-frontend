@@ -3,11 +3,11 @@ import imgProfile from "../../images/img_profile.svg";
 
 import "./Navigation.css";
 
-function Navigation() {
+function Navigation(props) {
   return (
-    <section className="navigate">
+    <section className={`navigate ${props.isOpened  ? 'navigate__opened' : ' '}`}>
       <div className="navigate__container">
-        <button className="navigate__close-button"></button>
+        <button className="navigate__close-button" onClick={props.onClose}></button>
 
         <ul className="navigate__links">
           <NavLink to="/" className="navigate__link ">

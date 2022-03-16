@@ -7,7 +7,7 @@ function Login() {
   return (
     <section className="login">
           <div className="login__container">
-          <Link to="/">
+          <Link to="/" className='login__logo-link'>
             <img className="login__logo" src={logo} alt="Логотип" />
           </Link>
             <h2 className="login__entry">Рады видеть!</h2>

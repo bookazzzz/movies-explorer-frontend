@@ -113,7 +113,7 @@
 @media screen and (max-width: 1023px) {
   .profile__container {
     padding: 236px 0 269px;
-    max-width: 768px;
+    max-width: calc(100% - 358px);
   }
   .profile__edit-form {
     padding-bottom: 210px;
@@ -126,7 +126,7 @@
 @media screen and (max-width: 767px) {
   .profile__container {
     padding: 70px 0 40px;
-    max-width: 320px;
+    max-width: calc(100% - 60px);
   }
   .profile__entry {
     padding-bottom: 80px;

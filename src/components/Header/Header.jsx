@@ -9,6 +9,19 @@ import { useMediaQuery } from "react-responsive";
 function Header(props) {
   const isTabletOrMobile = useMediaQuery({ query: "(max-width: 1023px)" });
 
+  //состояние попапа бургер меню
+  const [isNavigationOpen, setIsNavigationOpen] = React.useState(false);
+
+  //функция открытия бургера
+  function handleNavigationButtonOpen() {
+    setIsNavigationOpen(true);
+}
+
+//функция закрытия бургера
+function handleNavigationButtonClose() {
+  setIsNavigationOpen(false);
+}
+
   return (
     <header className="header">
       <Link to="/" className="header__link">
@@ -59,8 +72,13 @@ function Header(props) {
           </>
           {isTabletOrMobile && ( 
             <>
-              <button className="header__burger-button" type="button"></button>
-              <Navigation />
+              <button 
+              className="header__burger-button" 
+              type="button"
+              onClick={handleNavigationButtonOpen}></button>
+              <Navigation 
+              isOpened={isNavigationOpen}
+              onClose={handleNavigationButtonClose}/>
             </>
           )}
         </>

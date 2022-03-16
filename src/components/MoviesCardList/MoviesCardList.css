@@ -12,6 +12,7 @@
     column-gap: 24px;
     row-gap: 30px;
     justify-content: center;
+    width: 100%;
   }
   
   .movies-card-list__button {
@@ -30,70 +31,39 @@
     cursor: pointer;
     margin: 50px auto 80px;
   }
+
+  .movies-card-list__button-hidden {
+    visibility: hidden;
+  }
   
   .movies-card-list__button:hover {
     opacity: 0.8;
   }
   
-  .movies-card__save-button {
-    width: 30px;
-    height: 30px;
-    margin-top: 5px;
-    padding: 0;
-    border: none;
-    border-radius: 50px;
-    background-color: #f9f9f9;
-    background-image: url("../../images/icon__save-movie_no_active.svg");
-    background-repeat: no-repeat;
-    background-position: center;
-    cursor: pointer;
-  }
-  
-  .movies-card__save-button:hover {
-    opacity: 0.8;
-  }
-  
-  .movies-card__save-button_active {
-    background-color: #2be080;
-    background-image: url("../../images/icon__save-movie_active.svg");
-  }
-
-  .movies-card__delete-button {
-    width: 30px;
-    height: 30px;
-    padding: 0;
-    margin-top: 5px;
-    border: none;
-    border-radius: 50px;
-    background-color: #F9F9F9;
-    background-image: url("../../images/icon__delete-movie.svg");
-    background-repeat: no-repeat;
-    background-position: center;
-    cursor: pointer;
-}
-
-.movies-card__delete-button:hover {
-  opacity: 0.8;
-}
-  
+ 
   @media screen and (max-width: 1023px) {
     .movies-card-list__elements {
-      max-width: 768px;
+      max-width: calc(100% - 60px);
       padding: 70px 30px 30px;
       grid-template-columns: repeat(auto-fill, 339px);
       column-gap: 30px;
       row-gap: 36px;
+    }
+
+    .movies-card-list {
+      display: flex;
+      flex-direction: column;
       margin: 0 auto;
+      max-width: calc(100% - 60px);
     }
   }
   
   @media screen and (max-width: 767px) {
     .movies-card-list__elements {
-      max-width: 320px;
+      max-width: calc(100% - 20px);
       padding: 40px 10px 30px;
       grid-template-columns: repeat(auto-fill, 300px);
       row-gap: 16px;
-      margin: 0 auto;
     }
   
     .movies-card-list__button {

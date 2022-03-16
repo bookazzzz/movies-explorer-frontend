@@ -131,4 +131,9 @@
   .navigate__profile-button {
     margin-bottom: 46px;
   }
+
+  .login__logo-link {
+    justify-content: center;
+    display: flex;
+  }
 }
