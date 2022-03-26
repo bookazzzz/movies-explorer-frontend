@@ -3,7 +3,35 @@ import "./Register.css";
 import logo from "../../images/logo.svg";
 import { Link } from "react-router-dom";
 
-function Register() {
+function Register(props) {
+  
+  const [name, setName] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+
+  function handleChangeName(e) {
+    setName(e.target.value);
+}
+  
+  function handleChangeEmail(e) {
+      setEmail(e.target.value);
+  }
+
+  function handleChangePassword(e) {
+      setPassword(e.target.value);
+  }
+
+  function handleSubmit(e) {
+      e.preventDefault();
+      props.onRegister({name, email, password});
+  }
+
+  React.useEffect(() => {
+      setEmail('');
+      setPassword('');
+  }, []);
+
+
   return (
     <section className="register">
       <div className="register__container">
@@ -11,7 +39,7 @@ function Register() {
         <img className="register__logo" src={logo} alt="Логотип" />
       </Link>
         <h2 className="register__entry">Добро пожаловать!</h2>
-        <form className="register__form">
+        <form className="register__form" onSubmit={handleSubmit}>
           <label className="register__label">
             Имя
             <input
@@ -20,9 +48,11 @@ function Register() {
               type="name"
               placeholder="Ваше имя"
               required
+              value={name || ''} 
+              onChange={handleChangeName}
             />
           </label>
-          <span className="register__input-error">Что-то пошло не так...</span>
+          <span className="register__input-error"></span>
           <label className="register__label">
             E-mail
             <input
@@ -31,9 +61,11 @@ function Register() {
               type="email"
               placeholder="Email"
               required
+              value={email || ''} 
+              onChange={handleChangeEmail}
             />
           </label>
-          <span className="register__input-error">Что-то пошло не так...</span>
+          <span className="register__input-error"></span>
           <label className="register__label">
             Пароль
             <input
@@ -43,9 +75,11 @@ function Register() {
               minLength="8"
               placeholder="Пароль"
               required
+              value={password || ''} 
+              onChange={handleChangePassword}
             />
           </label>
-          <span className="register__input-error">Что-то пошло не так...</span>
+          <span className="register__input-error"></span>
           <button type="submit" className="register__button">
             Зарегистрироваться
           </button>

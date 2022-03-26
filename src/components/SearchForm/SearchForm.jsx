@@ -1,8 +1,14 @@
-import React from 'react'
+import React from "react";
 import "./SearchForm.css";
 import FilterCheckbox from "../FilterCheckbox/FilterCheckbox";
 
-function SearchForm() {
+function SearchForm({
+  showShortMovies,
+  checked,
+  findByNameFilm,
+  setValue,
+  value,
+}) {
   return (
     <section className="search">
       <div className="search__container">
@@ -16,12 +22,23 @@ function SearchForm() {
               minLength="1"
               maxLength="200"
               required
+              value={value}
+              onChange={(e) => setValue(e.currentTarget.value)}
             />
           </div>
-          <button className="search__button">Найти</button>
+          <button
+            className="search__button"
+            onClick={(e) => {
+              e.preventDefault();
+              findByNameFilm();
+              setValue("");
+            }}
+          >
+            Найти
+          </button>
         </form>
 
-        <FilterCheckbox />
+        <FilterCheckbox showShortMovies={showShortMovies} checked={checked} />
       </div>
     </section>
   );
