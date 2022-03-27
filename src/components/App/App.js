@@ -12,6 +12,9 @@ import SavedMovies from "../SavedMovies/SavedMovies";
 import api from "../../utils/MainApi";
 import { getMovies } from "../../utils/MoviesApi";
 import { useWindowSize } from '../../hooks/useWindowSize';
+import {CONFLICT_EMAIL_MESSAGE,
+  INVALID_DATA_MESSAGE,AUTH_DATA_ERROR_MESSAGE,SERVER_ERROR_MESSAGE,SUCCSESS_UPDATE_MESSAGE,} from '../../utils/constant'
+
 
 function App() {
   //Переменная текущего пользователя
@@ -65,22 +68,31 @@ function App() {
   }
 
   // функция регистрации
-  function handleRegister({name, email, password}) {
+  function handleRegister(name, email, password) {
     api
       .createProfile(name, email, password)
       .then((res) => {
         if (res) {
-          handleLogin({email, password});
+          handleLogin(email, password);
         }
       })
       .catch((err) => {
+        if (err === "Error 400") {
+            return showResMessageTimer(INVALID_DATA_MESSAGE);
+        }
+        if (err === "Error 409") {
+            return showResMessageTimer(CONFLICT_EMAIL_MESSAGE);
+        }
+        if (err === "Error 500") {
+            return showResMessageTimer(SERVER_ERROR_MESSAGE);
+        }
         console.log(err);
-      });
+    });
   }
 
 
   // функция логина
-  function handleLogin({email, password}) {
+  function handleLogin(email, password) {
     api
       .login(email, password)
       .then((res) => {
@@ -91,8 +103,18 @@ function App() {
         }
       })
       .catch((err) => {
+        if (err === "Error 400") {
+            return showResMessageTimer(INVALID_DATA_MESSAGE);
+        }
+        if (err === "Error 401") {
+            return showResMessageTimer(AUTH_DATA_ERROR_MESSAGE);
+        }
+        if (err === "Error 500") {
+            console.log(SERVER_ERROR_MESSAGE);
+            return showResMessageTimer(SERVER_ERROR_MESSAGE);
+        }
         console.log(err);
-      });
+    });
   }
 
   //функция выхода
@@ -103,19 +125,29 @@ function App() {
   }
 
 //функция обновления профиля
-  function handleUpdateProfile({name, email}) {
-    api.updateProfile({name, email})
-      .then(res => {
-        console.log("updateProfile", res)
-        setCurrentUser(res.user);
-      })
-      .catch(e => {
-        console.log(`Ошибка при изменении данных пользователя: ${e}`)
-      })
+  function handleUpdateProfile(name, email) {
+    api.updateProfile(name, email)
+    .then((res) => {
+      if (res) {
+          setCurrentUser({
+              ...currentUser,
+              name: res.name,
+              email: res.email,
+          });
+          showResMessageTimer(SUCCSESS_UPDATE_MESSAGE);
+      }
+  })
+  .catch((err) => {
+    showResMessageTimer(SERVER_ERROR_MESSAGE);
+    console.log(err);
+});
   }
 
   // кастомный хук который следит за шириной экрана
 	const { width } = useWindowSize();
+
+  // Стейт загрузки
+  const [isLoading, setIsLoading] = React.useState(false);
 
 	//сколько будет отоброжаться карточек
 	const counterCard = (width >= 1280 && 12) || (width >= 768 && width < 1280 && 8) || (width >= 320 && width < 768 && 5);
@@ -140,9 +172,19 @@ function App() {
 
 	//Сетаем все фильмы в movies с помощью useEffect
 	React.useEffect(() => {
-		getMovies().then((res) => {
+    setIsLoading(true);
+		getMovies()
+    .then((res) => {
 			setMovies(res.map((el) => ({ ...el, filter: false })));
-		});
+		})
+    .catch((err) => {
+      console.log(err);
+    })
+    .finally(() => {
+      setTimeout(() =>{
+        setIsLoading(false);
+      }, 2000)
+  });
 	}, []);
 
 	//фильтрация короткометражек
@@ -156,6 +198,7 @@ function App() {
 	// поиск по иназванию
 	const findByNameFilm = () => {
 		if (value === '') return;
+    setTimeout(() => setIsLoading(false), 1000);
 		if (checked) {
 			const searchMovies = movies.filter((f) => f.duration <= 40 && f.nameRU.toLowerCase().includes(value.toLowerCase()));
 			setMoviesAction(searchMovies);
@@ -214,7 +257,13 @@ function App() {
 			setSaveMoviesAction(searchMovies);
 		}
 	};
-	console.log(saveMoviesAction);
+
+  const [apiResMessage, setApiResMessage] = React.useState(" ");
+
+  function showResMessageTimer(error) {
+    setApiResMessage(error);
+    setTimeout(() => setApiResMessage(""), 10000);
+}
 
   return (
     <CurrentUserContext.Provider value={currentUser}>
@@ -225,11 +274,17 @@ function App() {
           </Route>
 
           <Route path="/signup">
-            <Register onRegister={handleRegister}/>
+            <Register 
+            onRegister={handleRegister}
+            apiResMessage={apiResMessage}
+            />
           </Route>
 
           <Route path="/signin">
-            <Login onLogin={handleLogin}/>
+            <Login 
+            onLogin={handleLogin}
+            apiResMessage={apiResMessage}
+            />
           </Route>
 
           <ProtectedRoute
@@ -254,6 +309,7 @@ function App() {
 						counterCard={counterCard}
 						moviesAction={moviesAction}
 						changeFilterValue={changeFilterValue}
+            isLoading={isLoading}
           />
 
           <ProtectedRoute
@@ -270,6 +326,7 @@ function App() {
 						value={value}
 						setValue={setValue}
 						findByNameFilm={findByNameFilmSave}
+            isLoading={isLoading}
           />
 
           <Route path="*">

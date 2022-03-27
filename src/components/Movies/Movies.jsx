@@ -3,6 +3,7 @@ import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
 import SearchForm from "../SearchForm/SearchForm";
 import MoviesCardList from "../MoviesCardList/MoviesCardList";
+import "./Movies.css";
 
 function Movies(props) {
   return (
@@ -22,6 +23,7 @@ function Movies(props) {
           addedNewCard={props.addedNewCard}
           counterCard={props.counterCard}
           changeFilterValue={props.changeFilterValue}
+          isLoading={props.isLoading}
         />
       </main>
       <Footer />

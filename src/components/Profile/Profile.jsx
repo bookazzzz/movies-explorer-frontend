@@ -2,7 +2,7 @@ import React from 'react'
 import "./Profile.css";
 import Header from "../Header/Header";
 import { CurrentUserContext } from "../../contexts/CurrentUserContext";
-import useFormValidation from '../../hooks/validator';
+import useFormValidation from '../../hooks/useFormValidation';
 
 function Profile(props) {
   const currentUser = React.useContext(CurrentUserContext);

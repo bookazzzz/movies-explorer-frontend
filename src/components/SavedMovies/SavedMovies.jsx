@@ -23,6 +23,7 @@ function SavedMovies(props) {
 						counterCard={props.counterCard}
 						newItem={props.newItem}
 						addedNewCard={props.addedNewCard}
+						isLoading={props.isLoading}
 					/>
 				</div>
 			</main>

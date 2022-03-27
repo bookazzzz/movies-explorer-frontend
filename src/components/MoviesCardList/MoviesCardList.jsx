@@ -2,10 +2,13 @@ import React from 'react';
 import './MoviesCardList.css';
 import MoviesCard from '../MoviesCard/MoviesCard';
 import { Route, Switch } from 'react-router-dom';
+import Preloader from "../Preloader/Preloader";
 
-function MoviesCardList({ changeFilterValue, removeMoviesFunction, movies, newItem, addedNewCard, counterCard }) {
+function MoviesCardList({ changeFilterValue, removeMoviesFunction, movies, newItem, addedNewCard, counterCard, isLoading}) {
 	return (
 		<section className='movies-card-list'>
+			{isLoading && <Preloader />}
+
 			<div className='movies-card-list__elements'>
 				{movies?.slice(0, counterCard + newItem).map((movie, i) => {
 					return (
@@ -13,6 +16,7 @@ function MoviesCardList({ changeFilterValue, removeMoviesFunction, movies, newIt
 					);
 				})}
 			</div>
+			
 			<Switch>
 				<Route path='/movies'>
 					{movies?.length > counterCard + newItem && (
