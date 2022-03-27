@@ -59,9 +59,9 @@ function handleNavigationButtonClose() {
               className="header__link header__profile-link"
               activeClassName="header__link_active"
             >
-              <button class="header__profile-button">
+              <button className="header__profile-button">
                 <img
-                  class="header__profile-img"
+                  className="header__profile-img"
                   src={imgProfile}
                   alt="profile"
                 />

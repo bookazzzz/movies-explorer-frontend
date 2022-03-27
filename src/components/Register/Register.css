@@ -83,6 +83,10 @@
   background-color: #2f2f2f;
 }
 
+.register__input_invalid {
+  color: #EE3465;
+}
+
 .register__button:hover {
   opacity: 0.8;
 }
