@@ -11,10 +11,15 @@ import NotFound from "../NotFound/NotFound";
 import SavedMovies from "../SavedMovies/SavedMovies";
 import api from "../../utils/MainApi";
 import { getMovies } from "../../utils/MoviesApi";
-import { useWindowSize } from '../../hooks/useWindowSize';
-import {CONFLICT_EMAIL_MESSAGE,
-  INVALID_DATA_MESSAGE,AUTH_DATA_ERROR_MESSAGE,SERVER_ERROR_MESSAGE,SUCCSESS_UPDATE_MESSAGE,} from '../../utils/constant'
-
+import { useWindowSize } from "../../hooks/useWindowSize";
+import useLocalStorage from "../../hooks/useLocalStorage";
+import {
+  CONFLICT_EMAIL_MESSAGE,
+  INVALID_DATA_MESSAGE,
+  AUTH_DATA_ERROR_MESSAGE,
+  SERVER_ERROR_MESSAGE,
+  SUCCSESS_UPDATE_MESSAGE,
+} from "../../utils/constant";
 
 function App() {
   //Переменная текущего пользователя
@@ -36,8 +41,6 @@ function App() {
       history.push("/movies");
     }
   }, [loggedIn]);
-
-
 
   //Проверяем токен после каждого обновления
   React.useEffect(() => {
@@ -63,7 +66,7 @@ function App() {
           localStorage.removeItem("token");
           history.push("/");
         });
-        console.log(token)
+      console.log(token);
     }
   }
 
@@ -78,18 +81,17 @@ function App() {
       })
       .catch((err) => {
         if (err === "Error 400") {
-            return showResMessageTimer(INVALID_DATA_MESSAGE);
+          return showResMessageTimer(INVALID_DATA_MESSAGE);
         }
         if (err === "Error 409") {
-            return showResMessageTimer(CONFLICT_EMAIL_MESSAGE);
+          return showResMessageTimer(CONFLICT_EMAIL_MESSAGE);
         }
         if (err === "Error 500") {
-            return showResMessageTimer(SERVER_ERROR_MESSAGE);
+          return showResMessageTimer(SERVER_ERROR_MESSAGE);
         }
         console.log(err);
-    });
+      });
   }
-
 
   // функция логина
   function handleLogin(email, password) {
@@ -104,166 +106,203 @@ function App() {
       })
       .catch((err) => {
         if (err === "Error 400") {
-            return showResMessageTimer(INVALID_DATA_MESSAGE);
+          return showResMessageTimer(INVALID_DATA_MESSAGE);
         }
         if (err === "Error 401") {
-            return showResMessageTimer(AUTH_DATA_ERROR_MESSAGE);
+          return showResMessageTimer(AUTH_DATA_ERROR_MESSAGE);
         }
         if (err === "Error 500") {
-            console.log(SERVER_ERROR_MESSAGE);
-            return showResMessageTimer(SERVER_ERROR_MESSAGE);
+          console.log(SERVER_ERROR_MESSAGE);
+          return showResMessageTimer(SERVER_ERROR_MESSAGE);
         }
         console.log(err);
-    });
+      });
+  }
+
+  //функция обновления профиля
+  function handleUpdateProfile(name, email) {
+    api
+      .updateProfile(name, email)
+      .then((res) => {
+        if (res) {
+          setCurrentUser({
+            ...currentUser,
+            name: res.name,
+            email: res.email,
+          });
+          showResMessageTimer(SUCCSESS_UPDATE_MESSAGE);
+        }
+      })
+      .catch((err) => {
+        showResMessageTimer(SERVER_ERROR_MESSAGE);
+        console.log(err);
+      });
   }
 
   //функция выхода
   function signOut() {
     localStorage.removeItem("jwt");
     setLoggedIn(false);
-    history.push("/signin");
+    setMovies([]);
+    setMoviesAction([]);
+    setValueSave("");
+    setValue("");
+    history.push("/");
   }
-
-//функция обновления профиля
-  function handleUpdateProfile(name, email) {
-    api.updateProfile(name, email)
-    .then((res) => {
-      if (res) {
-          setCurrentUser({
-              ...currentUser,
-              name: res.name,
-              email: res.email,
-          });
-          showResMessageTimer(SUCCSESS_UPDATE_MESSAGE);
-      }
-  })
-  .catch((err) => {
-    showResMessageTimer(SERVER_ERROR_MESSAGE);
-    console.log(err);
-});
-  }
-
-  // кастомный хук который следит за шириной экрана
-	const { width } = useWindowSize();
 
   // Стейт загрузки
   const [isLoading, setIsLoading] = React.useState(false);
 
-	//сколько будет отоброжаться карточек
-	const counterCard = (width >= 1280 && 12) || (width >= 768 && width < 1280 && 8) || (width >= 320 && width < 768 && 5);
+  // кастомный хук который следит за шириной экрана
+  const { width } = useWindowSize();
 
-	//сколько будет добавляться карточек
-	const addedCar = (width >= 1280 && 3) || (width >= 768 && width < 1280 && 2) || (width >= 320 && width < 768 && 2);
+  //показывает ошибку поиска
+  const [showError, setShowError] = React.useState("");
 
-	//храним все фильмы в стейте movies
-	const [movies, setMovies] = React.useState([]);
+  //сколько будет отоброжаться карточек
+  const counterCard =
+    (width >= 1280 && 12) ||
+    (width >= 768 && width < 1280 && 8) ||
+    (width >= 320 && width < 768 && 5);
 
-	//стейт для филтрованных фильмов
-	const [moviesAction, setMoviesAction] = React.useState([]);
+  //сколько будет добавляться карточек
+  const addedCar =
+    (width >= 1280 && 3) ||
+    (width >= 768 && width < 1280 && 2) ||
+    (width >= 320 && width < 768 && 2);
 
-	//состояние фильтрации короткометражки
-	const [checked, setChecked] = React.useState(false);
+  //храним все фильмы в стейте movies
+  const [movies, setMovies] = useLocalStorage("all_movies", []);
 
-	//состояние инпут поля для поиска
-	const [value, setValue] = React.useState('');
+  //стейт для филтрованных фильмов
+  const [moviesAction, setMoviesAction] = useLocalStorage("movies_action", []);
 
-	//колличество новых добавляемых карточек
-	const [newItem, setNewItem] = React.useState(addedCar);
+  // стейт для сохраненных фильмов
+  const [saveMoviesAction, setSaveMoviesAction] = useLocalStorage(
+    "save_movies_action",
+    []
+  );
 
-	//Сетаем все фильмы в movies с помощью useEffect
-	React.useEffect(() => {
+  //колличество новых добавляемых карточек
+  const [newItem, setNewItem] = React.useState(addedCar);
+
+  //состояние инпут поля для поиска
+  const [value, setValue] = useLocalStorage("serach_value", "");
+  const [valueSave, setValueSave] = useLocalStorage("serach_value_save", "");
+
+  //Сетаем все фильмы в movies с помощью useEffect
+  const showAllMovies = async () => {
     setIsLoading(true);
-		getMovies()
-    .then((res) => {
-			setMovies(res.map((el) => ({ ...el, filter: false })));
-		})
-    .catch((err) => {
+    try {
+      const res = await getMovies();
+      const allMovies = res.map((item) => {
+        const imageURL = item.image
+          ? `https://api.nomoreparties.co${item.image.url}`
+          : "https://res.cloudinary.com/teepublic/image/private/s--OXUPFdsw--/t_Preview/b_rgb:191919,c_lpad,f_jpg,h_630,q_90,w_1200/v1606803184/production/designs/16724220_0.jpg";
+        const thumbnailURL = item.image
+          ? `https://api.nomoreparties.co${item.image.formats.thumbnail.url}`
+          : "https://res.cloudinary.com/teepublic/image/private/s--OXUPFdsw--/t_Preview/b_rgb:191919,c_lpad,f_jpg,h_630,q_90,w_1200/v1606803184/production/designs/16724220_0.jpg";
+        const noAdaptedName = item.nameEN ? item.nameEN : item.nameRU;
+        const countryValue = item.country ? item.country : "none";
+        return {
+          country: countryValue,
+          director: item.director,
+          duration: item.duration,
+          year: item.year,
+          description: item.description,
+          image: imageURL,
+          trailer: item.trailerLink,
+          thumbnail: thumbnailURL,
+          movieId: item.id,
+          nameRU: item.nameRU,
+          nameEN: noAdaptedName,
+        };
+      });
+      setMovies(allMovies);
+    } catch (err) {
       console.log(err);
-    })
-    .finally(() => {
-      setTimeout(() =>{
+    } finally {
+      setTimeout(() => {
         setIsLoading(false);
-      }, 2000)
-  });
-	}, []);
+      }, 2000);
+    }
+  };
 
-	//фильтрация короткометражек
-	const showShortMovies = () => {
-		setChecked(!checked);
-		setValue('');
-		setNewItem(0);
-		setMoviesAction([]);
-	};
+  //функция получения всех фильмов пользователя
+  const getFilm = async () => {
+    const res = await api.getUserMovies();
+    setSaveMoviesAction(res);
+  };
 
-	// поиск по иназванию
-	const findByNameFilm = () => {
-		if (value === '') return;
-    setTimeout(() => setIsLoading(false), 1000);
-		if (checked) {
-			const searchMovies = movies.filter((f) => f.duration <= 40 && f.nameRU.toLowerCase().includes(value.toLowerCase()));
-			setMoviesAction(searchMovies);
-		} else {
-			const searchMovies = movies.filter((f) => f.nameRU.toLowerCase().includes(value.toLowerCase()));
-			setMoviesAction(searchMovies);
-		}
-	};
+  //Функция для добавления фильма
+  const addedMovie = async (movie) => {
+    await api.createMovie(movie);
+    getFilm();
+  };
 
-	//функция для добавления новых карточек по нажатию на кнопку
-	const addedNewCard = () => {
-		setNewItem(newItem + 3);
-	};
+  //удаление фильма из пользовательского запроса
+  const removeMovie = async (movie) => {
+    const id = saveMoviesAction.find((f) => f.movieId === movie.movieId)._id;
+    await api.deleteMovie(id);
+    getFilm();
+  };
 
-	//смена состояния главного стейта
-	const changeFilterValue = (id, bool) => {
-		setMovies(movies.map((el) => (el.id === id ? { ...el, filter: !bool } : el)));
-		setMoviesAction(moviesAction.map((el) => (el.id === id ? { ...el, filter: !bool } : el)));
-	};
+  React.useEffect(() => {
+    getFilm();
+  }, []);
 
-	// стейт для сохраненных фильмов
-	const [saveMoviesAction, setSaveMoviesAction] = React.useState([]);
+  React.useEffect(() => {
+    if (loggedIn) showAllMovies();
+    setShowError("");
+  }, [loggedIn]);
 
-	//функция для сохранения фильмов
-	React.useEffect(() => {
-		setSaveMoviesAction(() => movies.filter((f) => f.filter === true));
-	}, [movies]);
+  //фильтрация короткометражек
+  const showShortMovies = (moviesF) => {
+    return moviesF?.filter((f) => f.duration <= 40);
+  };
 
-	//функция для удаления фильмов
-	const removeMoviesFunction = (id) => {
-		setMoviesAction(moviesAction.map((el) => (el.id === id ? { ...el, filter: false } : el)));
-		setMovies(movies.map((el) => (el.id === id ? { ...el, filter: false } : el)));
-		setSaveMoviesAction(saveMoviesAction.filter((f) => f.id !== id));
-		setChecked(false);
-	};
+  // helper поиска по иназванию
+  const findByNameFilm = (movies, value) => {
+    const res = movies.filter((f) =>
+      f.nameRU.toLowerCase().includes(value.toLowerCase())
+    );
 
-	// показ короткометражек в сохраненках
-	const showShortMoviesBySave = () => {
-		setChecked(!checked);
-		if (!checked) {
-			const searchMovies = saveMoviesAction.filter((f) => f.duration <= 40 && f.filter === true);
-			setSaveMoviesAction(searchMovies);
-		} else if (checked) {
-			setSaveMoviesAction(movies.filter((f) => f.filter));
-		}
-	};
+    if (res.length === 0) {
+      setShowError("Ничего не найдено");
+    }
+    return res;
+  };
 
-	// поиск по названию
-	const findByNameFilmSave = () => {
-		if (value === '') return;
-		if (checked) {
-			const searchMovies = movies.filter((f) => f.duration <= 40 && f.filter === true && f.nameRU.toLowerCase().includes(value.toLowerCase()));
-			setSaveMoviesAction(searchMovies);
-		} else {
-			const searchMovies = movies.filter((f) => f.filter === true && f.nameRU.toLowerCase().includes(value.toLowerCase()));
-			setSaveMoviesAction(searchMovies);
-		}
-	};
+  //поиск по названию всех фильмов
+  const submitFindByNameFilm = (value) => {
+    showAllMovies();
+    setMoviesAction(findByNameFilm(movies, value));
+  };
 
+  //поиск по названию сохраненок
+  const submitFindByNameSaveFilm = async (value) => {
+    const res = await api.getUserMovies();
+    showAllMovies();
+    setSaveMoviesAction(findByNameFilm(res, value));
+  };
+
+  //функция для добавления новых карточек по нажатию на кнопку
+  const addedNewCard = () => {
+    setNewItem(newItem + addedCar);
+  };
+
+  //находим все совпадения по айдишкам для лайка
+  function findLike(movie) {
+    return saveMoviesAction.some(
+      (savedMovie) => savedMovie.movieId === movie.movieId
+    );
+  }
   const [apiResMessage, setApiResMessage] = React.useState(" ");
 
   function showResMessageTimer(error) {
     setApiResMessage(error);
     setTimeout(() => setApiResMessage(""), 10000);
-}
+  }
 
   return (
     <CurrentUserContext.Provider value={currentUser}>
@@ -274,17 +313,14 @@ function App() {
           </Route>
 
           <Route path="/signup">
-            <Register 
-            onRegister={handleRegister}
-            apiResMessage={apiResMessage}
+            <Register
+              onRegister={handleRegister}
+              apiResMessage={apiResMessage}
             />
           </Route>
 
           <Route path="/signin">
-            <Login 
-            onLogin={handleLogin}
-            apiResMessage={apiResMessage}
-            />
+            <Login onLogin={handleLogin} apiResMessage={apiResMessage} />
           </Route>
 
           <ProtectedRoute
@@ -297,36 +333,39 @@ function App() {
 
           <ProtectedRoute
             component={Movies}
-						loggedIn={loggedIn}
-						path='/movies'
-						addedNewCard={addedNewCard}
-						findByNameFilm={findByNameFilm}
-						showShortMovies={showShortMovies}
-						checked={checked}
-						value={value}
-						setValue={setValue}
-						newItem={newItem}
-						counterCard={counterCard}
-						moviesAction={moviesAction}
-						changeFilterValue={changeFilterValue}
+            loggedIn={loggedIn}
+            path="/movies"
+            removeMovie={removeMovie}
+            submitFindByNameFilm={submitFindByNameFilm}
+            addedNewCard={addedNewCard}
+            newItem={newItem}
+            counterCard={counterCard}
+            movies={moviesAction}
+            showShortMovies={showShortMovies}
+            addedMovie={addedMovie}
+            findLike={findLike}
+            value={value}
+            setValue={setValue}
+            showError={showError}
+            setShowError={setShowError}
             isLoading={isLoading}
           />
 
           <ProtectedRoute
             component={SavedMovies}
-						loggedIn={loggedIn}
-						path='/saved-movies'
-						saveMovies={saveMoviesAction}
-						newItem={newItem}
-						counterCard={counterCard}
-						removeMoviesFunction={removeMoviesFunction}
-						addedNewCard={addedNewCard}
-						showShortMovies={showShortMoviesBySave}
-						checked={checked}
-						value={value}
-						setValue={setValue}
-						findByNameFilm={findByNameFilmSave}
-            isLoading={isLoading}
+            loggedIn={loggedIn}
+            path="/saved-movies"
+            movies={saveMoviesAction}
+            newItem={newItem}
+            counterCard={counterCard}
+            showShortMovies={showShortMovies}
+            removeMovie={removeMovie}
+            submitFindByNameFilm={submitFindByNameSaveFilm}
+            findLike={findLike}
+            value={valueSave}
+            setValue={setValueSave}
+            showError={showError}
+            setShowError={setShowError}
           />
 
           <Route path="*">

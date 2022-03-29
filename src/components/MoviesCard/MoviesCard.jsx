@@ -14,24 +14,28 @@ function MoviesCard(props) {
 					<Route path='/movies'>
 						<button
 							onClick={() => {
-								props.changeFilterValue(props.movie.id, props.movie.filter);
+								!props.findLike(props.movie) ? props.addedMovie(props.movie) : props.removeMovie(props.movie);
 							}}
 							className={
-								!props.movie.filter ? 'movies-card__save-button movies-card__save-button' : 'movies-card__save-button movies-card__save-button_active'
+								!props.findLike(props.movie)
+									? 'movies-card__save-button movies-card__save-button'
+									: 'movies-card__save-button movies-card__save-button_active'
 							}
 							type='button'
 						></button>
 					</Route>
 					<Route path='/saved-movies'>
 						<button
-							onClick={() => props.removeMoviesFunction(props.movie.id)}
+							onClick={() => props.removeMovie(props.movie)}
 							className='movies-card__save-button movies-card__delete-button'
 							type='button'
 						></button>
 					</Route>
 				</Switch>
 			</div>
-			<img className='movies-card__images' src={`https://api.nomoreparties.co/${props.image.url}`} alt='film' />
+			<a href={props.trailer} target="_blank" rel="noopener noreferrer">
+			<img className='movies-card__images' src={props.image} alt='film' />
+			</a>
 		</article>
 	);
 }
