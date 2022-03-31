@@ -4,7 +4,8 @@ import Footer from '../Footer/Footer';
 import SearchForm from '../SearchForm/SearchForm';
 import MoviesCardList from '../MoviesCardList/MoviesCardList';
 import useLocalStorage from '../../hooks/useLocalStorage';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import Preloader from '../Preloader/Preloader';
 
 function SavedMovies(props) {
 	//состояние фильтрации короткометражки
@@ -21,6 +22,7 @@ function SavedMovies(props) {
 	return (
 		<>
 			<Header loggedIn={props.loggedIn} />
+
 			<main>
 				<SearchForm
 					setChecked={setChecked}
@@ -31,22 +33,27 @@ function SavedMovies(props) {
 					submitFindByNameFilm={props.submitFindByNameFilm}
 					setShowError={props.setShowError}
 				/>
-				<div>
-					{props.showError && props.movies.length === 0 ? (
-						<h2 style={{ textAlign: 'center' }}>{props.showError}</h2>
-					) : (
-						<MoviesCardList
-							findLike={props.findLike}
-							movies={shortMovies}
-							removeMoviesFunction={props.removeMoviesFunction}
-							counterCard={props.counterCard}
-							newItem={props.newItem}
-							addedNewCard={props.addedNewCard}
-							removeMovie={props.removeMovie}
-						/>
-					)}
-				</div>
+				{props.isLoading ? (
+					<Preloader />
+				) : (
+					<div>
+						{props.showError && props.movies.length === 0 ? (
+							<h1 style={{ textAlign: 'center' }}>{props.showError}</h1>
+						) : (
+							<MoviesCardList
+								findLike={props.findLike}
+								movies={shortMovies}
+								removeMoviesFunction={props.removeMoviesFunction}
+								counterCard={props.counterCard}
+								newItem={props.newItem}
+								addedNewCard={props.addedNewCard}
+								removeMovie={props.removeMovie}
+							/>
+						)}
+					</div>
+				)}
 			</main>
+
 			<Footer />
 		</>
 	);
