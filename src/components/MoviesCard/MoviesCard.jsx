@@ -33,7 +33,7 @@ function MoviesCard(props) {
 					</Route>
 				</Switch>
 			</div>
-			<a href={props.trailer} target="_blank" rel="noopener noreferrer">
+			<a href={props.trailer} target="_blank" rel="noreferrer">
 			<img className='movies-card__images' src={props.image} alt='film' />
 			</a>
 		</article>

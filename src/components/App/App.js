@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Main from "../Main/Main";
 import { Route, Switch, useHistory, useLocation } from "react-router-dom";
 import { CurrentUserContext } from "../../contexts/CurrentUserContext";
@@ -13,20 +13,17 @@ import api from "../../utils/MainApi";
 import { getMovies } from "../../utils/MoviesApi";
 import { useWindowSize } from "../../hooks/useWindowSize";
 import useLocalStorage from "../../hooks/useLocalStorage";
-import {
-  CONFLICT_EMAIL_MESSAGE,
-  INVALID_DATA_MESSAGE,
-  AUTH_DATA_ERROR_MESSAGE,
-  SERVER_ERROR_MESSAGE,
-  SUCCSESS_UPDATE_MESSAGE,
-} from "../../utils/constant";
 
 function App() {
+  console.log("render");
   //Переменная текущего пользователя
   const [currentUser, setCurrentUser] = React.useState({
     name: "",
     email: "",
   });
+  console.log(currentUser);
+  //Переменная загрузки
+  const [isLoading, setIsLoading] = React.useState(false);
   // путь где находится пользователь
   let location = useLocation().pathname;
   // Состояние залогиненного пользователя
@@ -42,62 +39,66 @@ function App() {
     }
   }, [loggedIn]);
 
-  //Проверяем токен после каждого обновления
-  React.useEffect(() => {
-    tokenCheck();
-  }, []);
-
   // функция проверки токена
   function tokenCheck() {
     const token = localStorage.getItem("jwt");
     if (token) {
+      setIsLoading(true);
       api
         .getUser(token)
         .then((res) => {
           if (res) {
             setLoggedIn(true);
-            console.log(res);
-            setCurrentUser(res.user);
+
+            setCurrentUser({
+              name: res.user.name,
+              email: res.user.email,
+            });
             history.push(location);
+            showAllMovies();
+            setIsLoading(false);
           }
         })
         .catch((err) => {
           console.log(err);
           localStorage.removeItem("token");
           history.push("/");
+          setIsLoading(false);
         });
       console.log(token);
     }
   }
 
+  //Проверяем токен после каждого обновления
+  useEffect(() => {
+    console.log("effect");
+    tokenCheck();
+  }, []);
+
   // функция регистрации
-  function handleRegister(name, email, password) {
+  function handleRegister({ name, email, password }) {
+    setIsLoading(true);
     api
       .createProfile(name, email, password)
       .then((res) => {
+        setIsLoading(false);
         if (res) {
-          handleLogin(email, password);
+          handleLogin({ email, password });
         }
       })
       .catch((err) => {
-        if (err === "Error 400") {
-          return showResMessageTimer(INVALID_DATA_MESSAGE);
-        }
-        if (err === "Error 409") {
-          return showResMessageTimer(CONFLICT_EMAIL_MESSAGE);
-        }
-        if (err === "Error 500") {
-          return showResMessageTimer(SERVER_ERROR_MESSAGE);
-        }
         console.log(err);
+        setIsLoading(false);
       });
   }
 
   // функция логина
-  function handleLogin(email, password) {
+  function handleLogin({ email, password }) {
+    setIsLoading(true);
     api
       .login(email, password)
       .then((res) => {
+        setIsLoading(false);
         if (res.token) {
           localStorage.setItem("jwt", res.token);
           setLoggedIn(true);
@@ -105,59 +106,33 @@ function App() {
         }
       })
       .catch((err) => {
-        if (err === "Error 400") {
-          return showResMessageTimer(INVALID_DATA_MESSAGE);
-        }
-        if (err === "Error 401") {
-          return showResMessageTimer(AUTH_DATA_ERROR_MESSAGE);
-        }
-        if (err === "Error 500") {
-          console.log(SERVER_ERROR_MESSAGE);
-          return showResMessageTimer(SERVER_ERROR_MESSAGE);
-        }
+        setIsLoading(false);
         console.log(err);
       });
   }
 
   //функция обновления профиля
-  function handleUpdateProfile(name, email) {
+  function handleUpdateProfile({ name, email }) {
+    localStorage.getItem("jwt");
+    setIsLoading(true);
     api
       .updateProfile(name, email)
       .then((res) => {
-        if (res) {
-          setCurrentUser({
-            ...currentUser,
-            name: res.name,
-            email: res.email,
-          });
-          showResMessageTimer(SUCCSESS_UPDATE_MESSAGE);
-        }
+        console.log("updateProfile", res);
+        setCurrentUser({ email: res.email, name: res.name, _id: res._id });
+        setIsLoading(false);
       })
-      .catch((err) => {
-        showResMessageTimer(SERVER_ERROR_MESSAGE);
-        console.log(err);
+      .catch((e) => {
+        console.log(`Ошибка при изменении данных пользователя: ${e}`);
+        setIsLoading(false);
       });
   }
-
-  //функция выхода
-  function signOut() {
-    localStorage.removeItem("jwt");
-    setLoggedIn(false);
-    setMovies([]);
-    setMoviesAction([]);
-    setValueSave("");
-    setValue("");
-    history.push("/");
-  }
-
-  // Стейт загрузки
-  const [isLoading, setIsLoading] = React.useState(false);
 
   // кастомный хук который следит за шириной экрана
   const { width } = useWindowSize();
 
   //показывает ошибку поиска
-  const [showError, setShowError] = React.useState("");
+  const [showError, setShowError] = useState("");
 
   //сколько будет отоброжаться карточек
   const counterCard =
@@ -184,74 +159,90 @@ function App() {
   );
 
   //колличество новых добавляемых карточек
-  const [newItem, setNewItem] = React.useState(addedCar);
+  const [newItem, setNewItem] = useState(addedCar);
 
   //состояние инпут поля для поиска
   const [value, setValue] = useLocalStorage("serach_value", "");
   const [valueSave, setValueSave] = useLocalStorage("serach_value_save", "");
 
+  //функция выхода
+  function signOut() {
+    localStorage.removeItem("jwt");
+    localStorage.removeItem("save_movies_action");
+    localStorage.removeItem("movies_action");
+    setCurrentUser({
+      name: "",
+      email: "",
+    });
+    setLoggedIn(false);
+    setMovies([]);
+    setMoviesAction([]);
+    setValueSave("");
+    setValue("");
+    history.push("/");
+  }
+
   //Сетаем все фильмы в movies с помощью useEffect
   const showAllMovies = async () => {
     setIsLoading(true);
-    try {
-      const res = await getMovies();
-      const allMovies = res.map((item) => {
-        const imageURL = item.image
-          ? `https://api.nomoreparties.co${item.image.url}`
-          : "https://res.cloudinary.com/teepublic/image/private/s--OXUPFdsw--/t_Preview/b_rgb:191919,c_lpad,f_jpg,h_630,q_90,w_1200/v1606803184/production/designs/16724220_0.jpg";
-        const thumbnailURL = item.image
-          ? `https://api.nomoreparties.co${item.image.formats.thumbnail.url}`
-          : "https://res.cloudinary.com/teepublic/image/private/s--OXUPFdsw--/t_Preview/b_rgb:191919,c_lpad,f_jpg,h_630,q_90,w_1200/v1606803184/production/designs/16724220_0.jpg";
-        const noAdaptedName = item.nameEN ? item.nameEN : item.nameRU;
-        const countryValue = item.country ? item.country : "none";
-        return {
-          country: countryValue,
-          director: item.director,
-          duration: item.duration,
-          year: item.year,
-          description: item.description,
-          image: imageURL,
-          trailer: item.trailerLink,
-          thumbnail: thumbnailURL,
-          movieId: item.id,
-          nameRU: item.nameRU,
-          nameEN: noAdaptedName,
-        };
-      });
-      setMovies(allMovies);
-    } catch (err) {
-      console.log(err);
-    } finally {
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 2000);
-    }
+    const res = await getMovies();
+    setIsLoading(false);
+    const allMovies = res.map((item) => {
+      const imageURL = item.image
+        ? `https://api.nomoreparties.co${item.image.url}`
+        : "https://res.cloudinary.com/teepublic/image/private/s--OXUPFdsw--/t_Preview/b_rgb:191919,c_lpad,f_jpg,h_630,q_90,w_1200/v1606803184/production/designs/16724220_0.jpg";
+      const thumbnailURL = item.image
+        ? `https://api.nomoreparties.co${item.image.formats.thumbnail.url}`
+        : "https://res.cloudinary.com/teepublic/image/private/s--OXUPFdsw--/t_Preview/b_rgb:191919,c_lpad,f_jpg,h_630,q_90,w_1200/v1606803184/production/designs/16724220_0.jpg";
+      const noAdaptedName = item.nameEN ? item.nameEN : item.nameRU;
+      const countryValue = item.country ? item.country : "none";
+      return {
+        country: countryValue,
+        director: item.director,
+        duration: item.duration,
+        year: item.year,
+        description: item.description,
+        image: imageURL,
+        trailer: item.trailerLink,
+        thumbnail: thumbnailURL,
+        movieId: item.id,
+        nameRU: item.nameRU,
+        nameEN: noAdaptedName,
+      };
+    });
+    setMovies(allMovies);
   };
 
   //функция получения всех фильмов пользователя
   const getFilm = async () => {
+    // setIsLoading(true);
     const res = await api.getUserMovies();
+    // setIsLoading(false);
     setSaveMoviesAction(res);
   };
 
   //Функция для добавления фильма
   const addedMovie = async (movie) => {
+    // setIsLoading(true);
     await api.createMovie(movie);
+    // setIsLoading(false);
     getFilm();
   };
 
   //удаление фильма из пользовательского запроса
   const removeMovie = async (movie) => {
     const id = saveMoviesAction.find((f) => f.movieId === movie.movieId)._id;
+    // setIsLoading(true);
     await api.deleteMovie(id);
+    // setIsLoading(false);
     getFilm();
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     getFilm();
-  }, []);
+  }, [isLoading]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (loggedIn) showAllMovies();
     setShowError("");
   }, [loggedIn]);
@@ -297,12 +288,6 @@ function App() {
       (savedMovie) => savedMovie.movieId === movie.movieId
     );
   }
-  const [apiResMessage, setApiResMessage] = React.useState(" ");
-
-  function showResMessageTimer(error) {
-    setApiResMessage(error);
-    setTimeout(() => setApiResMessage(""), 10000);
-  }
 
   return (
     <CurrentUserContext.Provider value={currentUser}>
@@ -311,26 +296,29 @@ function App() {
           <Route exact path="/">
             <Main loggedIn={loggedIn} />
           </Route>
-
           <Route path="/signup">
             <Register
               onRegister={handleRegister}
-              apiResMessage={apiResMessage}
+              isLoading={isLoading}
+              loggedIn={loggedIn}
             />
           </Route>
-
           <Route path="/signin">
-            <Login onLogin={handleLogin} apiResMessage={apiResMessage} />
+            <Login
+              onLogin={handleLogin}
+              isLoading={isLoading}
+              loggedIn={loggedIn}
+            />
           </Route>
-
           <ProtectedRoute
             loggedIn={loggedIn}
             component={Profile}
             onSignOut={signOut}
+            isLoading={isLoading}
+            setIsLoading={setIsLoading}
             onEditProfile={handleUpdateProfile}
             path="/profile"
           />
-
           <ProtectedRoute
             component={Movies}
             loggedIn={loggedIn}
@@ -354,6 +342,7 @@ function App() {
           <ProtectedRoute
             component={SavedMovies}
             loggedIn={loggedIn}
+            isLoading={isLoading}
             path="/saved-movies"
             movies={saveMoviesAction}
             newItem={newItem}
